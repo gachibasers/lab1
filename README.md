@@ -13,18 +13,11 @@ classDiagram
         -year: int
         -totalCopies: int
         +Book(t, a, i, y, copies)
-        +getTitle() string
-        +getAuthor() string
-        +getISBN() string
-        +getYear() int
-        +getTotalCopies() int
         +displayInfo() void
-        +getBorrowingCost() double
-        +matchesTitle(q) bool
         +checkout() bool
         +checkin() void
-        +isOldEdition(thresholdYear) bool
         +isAvailable() bool
+        +matchesTitle(q) bool
     }
 
     class EBook {
@@ -47,7 +40,6 @@ classDiagram
         #name: string
         #id: string
         #email: string
-        +User(n, i, e)
         +displayInfo() void*
         +notify(message) void
         +getId() string
@@ -55,8 +47,6 @@ classDiagram
 
     class Reader {
         -borrowedIsbns: vector~string~
-        +Reader(n, i, e)
-        +displayInfo() void
         +borrow(isbn) bool
         +returnBook(isbn) bool
         +listBorrowed() void
@@ -69,14 +59,9 @@ classDiagram
         -loanDate: time_t
         -dueDate: time_t
         -returned: bool
-        +Loan(lid, isbn, uid, loanD, dueD)
         +markReturned() void
-        +isReturned() bool
         +isOverdue() bool
         +daysLeft() int
-        +getISBN() string
-        +getUserId() string
-        +getLoanId() string
     }
 
     class Library {
@@ -84,13 +69,9 @@ classDiagram
         -readers: vector~Reader~
         -loans: vector~Loan~
         +addBook(book) void
-        +addReader(reader) void
-        +findBookByISBN(isbn) Book*
-        +findReaderById(id) Reader*
         +issueBook(isbn, readerId) bool
         +returnBook(isbn, readerId) bool
         +listBooks() void
-        +listReaders() void
         +listLoans() void
     }
 
@@ -100,6 +81,69 @@ classDiagram
     Library --> Book
     Library --> Reader
     Library --> Loan
+```
+
+## UML-діаграма послідовності (видача книги)
+
+```mermaid
+sequenceDiagram
+    participant U as Користувач/Студент
+    participant L as Library
+    participant B as Book
+    participant R as Reader
+    participant LN as Loan
+
+    U->>L: issueBook(isbn, readerId)
+    L->>B: findBookByISBN(isbn)
+    B-->>L: Book*
+    L->>R: findReaderById(readerId)
+    R-->>L: Reader*
+    L->>B: isAvailable()
+    B-->>L: true
+    L->>R: borrow(isbn)
+    R-->>L: true
+    L->>B: checkout()
+    B-->>L: копія зменшено
+    L->>LN: створити Loan(...)
+    LN-->>L: Loan*
+    L-->>U: "Книга видана"
+```
+
+## UML-діаграма варіантів використання (Use Case)
+
+```mermaid
+graph LR
+    A[Адміністратор] --> UC1[Керування книгами]
+    A --> UC2[Керування читачами]
+    A --> UC3[Реєстрація видачі]
+    A --> UC4[Реєстрація повернення]
+    A --> UC5[Перегляд звітів]
+
+    UC3 --> B[Система]
+    UC4 --> B
+    B --> C[Запис у журнал Loan]
+
+    UC1 --> D[Додавання/видалення книги]
+    UC2 --> E[Реєстрація читача]
+    UC5 --> F[Список книг/читачів/позик]
+```
+
+## Діаграма активності (робота системи)
+
+```mermaid
+graph TD
+    Start([Початок]) --> Input[Введення даних: ISBN та Reader ID]
+    Input --> FindBook{Книга знайдена?}
+    FindBook -->|Ні| ErrorBook[Повідомлення: книга не знайдена]
+    FindBook -->|Так| FindReader{Читач знайдений?}
+    FindReader -->|Ні| ErrorReader[Повідомлення: читач не знайдений]
+    FindReader -->|Так| CheckAvail{Книга доступна?}
+    CheckAvail -->|Ні| ErrorAvail[Повідомлення: немає в наявності]
+    CheckAvail -->|Так| Issue[Видача: checkout + Loan + notify]
+    Issue --> End([Кінець])
+    ErrorBook --> End
+    ErrorReader --> End
+    ErrorAvail --> End
 ```
 
 ## Складання
@@ -127,3 +171,5 @@ Danilo;U001;danilo@example.com
 ```bash
 ./lab1
 ```
+
+Додаткові UML-діаграми: див. папки `Class Diagram/`, `Sequence Diagram/`, `Activity Diagram/`, `Use Case/`.
