@@ -2,20 +2,110 @@
 
 Система керування бібліотекою з використанням класів, наслідування, поліморфізму та роботи з файлами.
 
-## Ієрархія класів
+## UML-діаграма класів
 
-- `Book` — базова книга
-- `EBook` — електронна книга
-- `SpecialEditionEBook` — спеціальне видання електронної книги
-- `User` — абстрактний користувач
-- `Reader` — читач бібліотеки
-- `Loan` — запис про видачу
-- `Library` — бібліотека
+```mermaid
+classDiagram
+    class Book {
+        -title: string
+        -author: string
+        -isbn: string
+        -year: int
+        -totalCopies: int
+        +Book(t, a, i, y, copies)
+        +getTitle() string
+        +getAuthor() string
+        +getISBN() string
+        +getYear() int
+        +getTotalCopies() int
+        +displayInfo() void
+        +getBorrowingCost() double
+        +matchesTitle(q) bool
+        +checkout() bool
+        +checkin() void
+        +isOldEdition(thresholdYear) bool
+        +isAvailable() bool
+    }
+
+    class EBook {
+        -downloadUrl: string
+        -fileSizeMB: double
+        +EBook(t, a, i, y, url, size)
+        +getDownloadInfo() void
+        +displayInfo() void
+        +getBorrowingCost() double
+    }
+
+    class SpecialEditionEBook {
+        -hasBonusContent: bool
+        +SpecialEditionEBook(t, a, i, y, url, size, bonus)
+        +displayInfo() void
+        +getBorrowingCost() double
+    }
+
+    class User {
+        #name: string
+        #id: string
+        #email: string
+        +User(n, i, e)
+        +displayInfo() void*
+        +notify(message) void
+        +getId() string
+    }
+
+    class Reader {
+        -borrowedIsbns: vector~string~
+        +Reader(n, i, e)
+        +displayInfo() void
+        +borrow(isbn) bool
+        +returnBook(isbn) bool
+        +listBorrowed() void
+    }
+
+    class Loan {
+        -loanId: string
+        -bookIsbn: string
+        -userId: string
+        -loanDate: time_t
+        -dueDate: time_t
+        -returned: bool
+        +Loan(lid, isbn, uid, loanD, dueD)
+        +markReturned() void
+        +isReturned() bool
+        +isOverdue() bool
+        +daysLeft() int
+        +getISBN() string
+        +getUserId() string
+        +getLoanId() string
+    }
+
+    class Library {
+        -books: vector~Book~
+        -readers: vector~Reader~
+        -loans: vector~Loan~
+        +addBook(book) void
+        +addReader(reader) void
+        +findBookByISBN(isbn) Book*
+        +findReaderById(id) Reader*
+        +issueBook(isbn, readerId) bool
+        +returnBook(isbn, readerId) bool
+        +listBooks() void
+        +listReaders() void
+        +listLoans() void
+    }
+
+    Book <|-- EBook
+    EBook <|-- SpecialEditionEBook
+    User <|-- Reader
+    Library --> Book
+    Library --> Reader
+    Library --> Loan
+```
 
 ## Складання
 
 ```bash
-g++ -std=c++17 main.cpp src/Book.cpp src/User.cpp src/Loan.cpp src/Library.cpp -o lab1
+g++ -std=c++17 main.cpp Book.cpp User.cpp Loan.cpp Library.cpp -o lab1
 ```
 
 ## Формат файлів
